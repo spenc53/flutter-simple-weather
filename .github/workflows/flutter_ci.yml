@@ -40,14 +40,15 @@ jobs:
     - name: Setup git config files
       run: |
         git config --global user.email "seeger.spencer[bot]@users.noreply.github.com"
-        git config --global user.name "github-actions[bot]"
+        git config --global user.name "spenc53"
+        git config --global user.password "${secrets.ACCESS_TOKEN}""
 
     - name: Push to build branch
       run: |
         cd build/web
         git init .
         git checkout -b build
-        git remote add origin https://{{secrets.ACCESS_TOKEN}}@github.com/spenc53/flutter-simple-weather.git
+        git remote add origin https://github.com/spenc53/flutter-simple-weather.git
         git add .
         git commit -am "Github Workflow build"
         git push origin build --force
