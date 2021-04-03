@@ -44,7 +44,7 @@ jobs:
 
     - name: Push to build branch
       run: |
-        cd build\web
+        cd build/web
         git init .
         git checkout -b build
         git remote add origin https://spenc53:{{secrets.ACCESS_TOKEN}}@github.com/spenc53/flutter-simple-weather.git
