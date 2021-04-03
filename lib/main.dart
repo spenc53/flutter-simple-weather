@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -49,6 +50,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   Animation<double> animation;
   AnimationController controller;
+  GlobalKey _paintKey = new GlobalKey();
+  int mouseLoc = -1;
 
   @override
   void initState() {
@@ -78,80 +81,109 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    var padding = MediaQuery.of(context).padding;
+    double newheight = height - padding.top - padding.bottom;
+    double newwidth = width - padding.left - padding.right;
+
     return Scaffold(
-      // appBar: AppBar(
-      //   elevation: 0,
-      // ),
       backgroundColor: Color.fromARGB(255, 149, 165, 165),
-      body: SafeArea(
-        child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(top: 30, left: 15, right: 15),
-              child: Container(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Icon(Icons.menu, size: 40),
-                    Text(
-                      'Bothell',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white60,
-                        letterSpacing: 2,
+      body: new Listener(
+        onPointerHover: (PointerHoverEvent event) {
+          double yPos = (newheight - event.position.dy) / newheight;
+          double temp = (1 - ((newwidth - event.position.dx) / newwidth)) * 8;
+          int newMouseLoc = temp.round();
+          if (yPos >= .38) {
+            newMouseLoc = -1;
+          }
+          setState(() {mouseLoc = newMouseLoc;});
+        },
+        child: SafeArea(
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(top: 30, left: 15, right: 15),
+                child: Container(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Icon(Icons.menu, size: 40),
+                      Text(
+                        'Seattle',
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white60,
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
-                    Icon(
-                      Icons.more_vert,
-                      size: 40,
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 100),
-              child: Container(
-                child: Icon(
-                  Icons.wb_sunny_outlined,
-                  size: 140,
-                  color: Colors.white60,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Container(
-                child: Text(
-                  'Sunday 8 AM',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w300
+                      Icon(
+                        Icons.more_vert,
+                        size: 40,
+                      )
+                    ],
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        child: CustomPaint(
-                          painter: TempCurvePainter(animation.value),
-                        ),
-                      ),
-                    )
-                  ],
+              Padding(
+                padding: const EdgeInsets.only(top: 100),
+                child: Container(
+                  child: Icon(
+                    Icons.wb_sunny_outlined,
+                    size: 140,
+                    color: Colors.white60,
+                  ),
                 ),
               ),
-            )
-          ],
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Container(
+                  child: Text(
+                    '47 F',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w900
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Container(
+                  child: Text(
+                    'Saturday 9 AM',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white70
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          child: CustomPaint(
+                            key: _paintKey,
+                            painter: TempCurvePainter(animation.value, mouseLoc),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -160,7 +192,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
 class TempCurvePainter extends CustomPainter {
   final double progress;
-  TempCurvePainter(this.progress);
+  final int selected;
+  TempCurvePainter(this.progress, this.selected);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -175,9 +208,23 @@ class TempCurvePainter extends CustomPainter {
     double heightInterval = size.height / 20;
     List<double> xs =
         [0, 1, 2, 3, 4, 5, 6, 7, 8].map((e) => (e * widthInterval).toDouble()).toList();
-    List<double> ys = [1, 3, 4, 7, 6, 5, 4, 2, 0].map((e) => e * this.progress).toList();
-    double maxNum = ys.reduce(max);
-    ys = ys.map((e) => (((maxNum - e) * heightInterval) + size.height - (maxNum + 1) * heightInterval).toDouble()).toList();
+    List<String> xData = [
+      '9 AM',
+      '10 AM',
+      '11 AM',
+      '12 PM',
+      '1 PM',
+      '2 PM',
+      '3 PM',
+      '4 PM',
+      '5 PM',
+    ];
+    List<double> yData = [46, 46, 50, 54, 55, 57, 57, 59, 57].map((e) => e.toDouble()).toList();
+    double maxNum = yData.reduce(max).toDouble();
+    double minNum = yData.reduce(min).toDouble();
+    double divisor = maxNum - minNum;
+    List<double> ys = yData.map((e) => ((e - minNum) / (divisor)).toDouble()).toList();
+    ys = ys.map((e) => ((-9 * (e * heightInterval) + size.height)) - 10).toList();
     path.moveTo(xs[0], ys[0]);
 
     for (var i = 0; i < xs.length - 1; i++) {
@@ -194,6 +241,19 @@ class TempCurvePainter extends CustomPainter {
     // path.lineTo(size.width, size.height);
 
     canvas.drawPath(path, paint);
+
+    if (selected == -1) {
+      return;
+    }
+
+
+    paint.style = PaintingStyle.fill;
+    canvas.drawCircle(new Offset(xs[selected], ys[selected]), 10.0, paint);
+
+    TextSpan span = new TextSpan(style: new TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500), text: "${xData[selected]}\n${yData[selected]} F");
+    TextPainter tp = new TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+    tp.layout();
+    tp.paint(canvas, new Offset(xs[selected] - tp.size.width / 2, ys[selected] - 70));
   }
 
   @override
