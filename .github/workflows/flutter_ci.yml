@@ -48,4 +48,6 @@ jobs:
         git init .
         git checkout -b build
         git remote add origin https://spenc53:{{secrets.ACCESS_TOKEN}}@github.com/spenc53/flutter-simple-weather.git
+        git add .
+        git commit -am "Github Workflow build"
         git push origin build --force
