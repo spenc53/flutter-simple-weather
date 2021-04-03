@@ -41,7 +41,7 @@ jobs:
       run: |
         git config --global user.email "seeger.spencer[bot]@users.noreply.github.com"
         git config --global user.name "spenc53"
-        git config --global user.password "${secrets.ACCESS_TOKEN}"
+        git config --global user.password ${secrets.ACCESS_TOKEN}
 
     - name: Push to build branch
       run: |
