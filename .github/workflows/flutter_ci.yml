@@ -1,0 +1,50 @@
+name: Flutter Web CI
+
+# This workflow is triggered on pushes to the repository.
+
+on:
+  push:
+    branches:
+    - main
+    
+# on: push    # Default will running for every branch.
+    
+jobs:
+  build:
+    # This job will run on ubuntu virtual machine
+    runs-on: ubuntu-latest
+    steps:
+    
+    # Setup the flutter environment.
+    - uses: subosito/flutter-action@v1
+      with:
+        channel: 'stable' # 'dev', 'alpha', default to: 'stable'
+        flutter-version: '2.0.4' # you can also specify exact version of flutter
+    
+    # Get flutter dependencies.
+    - name: Get project Dependencies
+      run: flutter pub get
+    
+    # Check for any formatting issues in the code.
+    - run: flutter format --set-exit-if-changed .
+    
+    # Statically analyze the Dart code for any errors.
+    - run: flutter analyze .
+    
+    # Build apk.
+    - name: Build Web
+      run: flutter build web
+
+    - name: Commit files
+      run: |
+        git config --local user.email "seeger.spencer[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -m "Add changes" -a
+
+    - name: Push to build branch
+      run: |
+        cd build\web
+        git init .
+        git checkout -b build
+        git remote add origin https://spenc53:{{secrets.ACCESS_TOKEN}}@github.com/spenc53/flutter-simple-weather.git
+        git push origin build --force
