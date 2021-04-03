@@ -46,4 +46,6 @@ jobs:
       run: |
         cd build/web
         git init .
+        git add .
+        git commit -m "build"
         git push -f https://${{ secrets.ACCESS_TOKEN }}@github.com/spenc53/flutter-simple-weather.git master:build
