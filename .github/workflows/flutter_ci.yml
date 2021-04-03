@@ -39,8 +39,8 @@ jobs:
 
     - name: Setup git config files
       run: |
-        git config --local user.email "seeger.spencer[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --global user.email "seeger.spencer[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
 
     - name: Push to build branch
       run: |
