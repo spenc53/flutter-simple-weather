@@ -47,8 +47,4 @@ jobs:
       run: |
         cd build/web
         git init .
-        git checkout -b build
-        git remote add origin https://github.com/spenc53/flutter-simple-weather.git
-        git add .
-        git commit -am "Github Workflow build"
-        git push origin build --force
+        git push -f https://${secrets.ACCESS_TOKEN}@github.com/spenc53/flutter-simple-weather.git
