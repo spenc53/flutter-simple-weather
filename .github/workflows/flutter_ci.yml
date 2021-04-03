@@ -37,11 +37,10 @@ jobs:
     - name: Build Web
       run: flutter build web
 
-    - name: Commit files
+    - name: Setup git config files
       run: |
         git config --local user.email "seeger.spencer[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git commit -m "Add changes" -a
 
     - name: Push to build branch
       run: |
